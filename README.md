@@ -1,59 +1,27 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Submission Praktikum ISB 310 Sistem Informasi Berbasis Web Minggu ke-8
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Identitas Pemilik
 
-## About Laravel
+- **Nama :** Novila Arya Minar Saputra
+- **NRP :** 162023024
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Penjelasan Kode
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Pada minggu kedelapan ini, praktikum difokuskan pada **Slicing Template Advance & CRUD** serta **Upload Gambar & File pada Laravel**. Berikut adalah penjelasan dari modifikasi dan struktur kode yang telah dikembangkan:
 
-## Learning Laravel
+### 1. Slicing Template (Layouts & Partials)
+Teknik *slicing template* digunakan untuk membagi layout website menjadi komponen modular. File `resources/views/layouts/main.blade.php` dibuat sebagai kerangka utama (*Master Layout*) yang memuat elemen statis HTML dasar, pemanggilan CSS/JS (Bootstrap), serta perintah `@yield('content')` sebagai ruang dinamis. 
+Bagian navigasi dipisahkan secara khusus ke dalam `resources/views/partials/navbar.blade.php`. Dengan demikian, file halaman anak seperti `index.blade.php` dan `product.blade.php` tidak perlu menulis ulang kode HTML dari awal. File tersebut cukup mewarisi layout utama dengan `@extends('layouts.main')` dan mengisi bagian konten menggunakan `@section('content')`.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 2. Modularisasi Komponen Modal
+Untuk mencegah penumpukan baris kode yang panjang pada satu file, seluruh elemen *Modal* dipisahkan ke dalam direktori `resources/views/modal/`. Terdapat `createProduct.blade.php` untuk formulir tambah data, `updateProduct.blade.php` untuk formulir edit data, dan `wishlist.blade.php` untuk daftar keinginan. 
+Modal-modal ini kemudian dipanggil ke dalam halaman utama menggunakan `@include('modal.nama_file')`. Khusus untuk modal *update*, pemanggilan diletakkan di dalam *looping* `@foreach` dengan membawa parameter spesifik (`['item' => $item]`) agar form modal dapat mengenali dan menampilkan data produk yang sedang dipilih.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 3. Fitur Upload Gambar (ProductController & Storage)
+Pada sisi Controller, fungsi `store` dan `update` menggunakan metode `$request->file('product_image')->store('products', 'public')` untuk menyimpan file secara aman ke dalam folder `storage/app/public/products` sekaligus menyimpan *path* namanya ke database. Agar gambar fisik ini dapat diakses oleh browser, perintah `php artisan storage:link` dieksekusi di terminal untuk membuat *symlink* (jalan pintas) ke folder public. Di dalam file Blade, gambar dipanggil menggunakan fungsi helper `{{ asset('storage/' . $item->product_image) }}`.
 
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 4. Pengelolaan CRUD (Update & Delete)
+Sistem CRUD disempurnakan dengan penambahan *routing* spesifik untuk mengubah dan menghapus data. Rute menggunakan metode HTTP `PUT` untuk proses *update* dan `DELETE` untuk proses *destroy*. 
+Pada form HTML di dalam file Blade, teknik *method spoofing* (menggunakan `@method('PUT')` dan `@method('DELETE')`) diterapkan karena form HTML standar pada browser pada dasarnya hanya mendukung GET dan POST. Selain itu, Controller juga telah diprogram dengan logika `Storage::disk('public')->delete()` agar secara otomatis menghapus file gambar fisik dari direktori ketika sebuah produk dihapus atau ketika gambar lamanya diganti, sehingga mencegah penumpukan file sampah pada sistem *storage*.
